@@ -340,17 +340,11 @@
 	
 			// Make sure duration is a float:
 			this.duration = parseFloat( this.duration );
-			mw.log( 'EmbedPlayer::mediaElement:' + this.id + " duration is: " + this.duration );
+			mw.log( 'EmbedPlayer::init:' + this.id + " duration is: " + this.duration );
 	
 			// Set the playerElementId id
 			this.pid = 'pid_' + this.id;
 	
-			// Grab any innerHTML and set it to missing_plugin_html
-			// NOTE: we should strip "source" tags instead of checking and skipping
-			if ( element.innerHTML != '' && element.getElementsByTagName( 'source' ).length == 0 ) {
-				// mw.log( 'innerHTML: ' + element.innerHTML );
-				this.user_missing_plugin_html = element.innerHTML;
-			}
 			// Add the mediaElement object with the elements sources:
 			this.mediaElement = new mw.MediaElement( element );
 			
@@ -381,7 +375,8 @@
 			try{
 				$( this ).trigger( name, obj );
 			} catch( e ){
-				mw.log( "EmbedPlayer:: Error in trgger: " + name + " " + e.toString() );
+				// ignore try catch calls
+				// mw.log( "EmbedPlayer:: possible error in trgger: " + name + " " + e.toString() );
 			}
 		},
 		/**
@@ -393,6 +388,7 @@
 			this.stopMonitor();
 			this._propagateEvents = false;
 		},
+		
 		/**
 		 * Restores event propagation
 		 * @return
@@ -402,7 +398,10 @@
 			this._propagateEvents = true;
 			this.startMonitor();
 		},
-	
+		
+		/**
+		 * Enables the play controls ( for example when an ad is done )
+		 */
 		enablePlayControls: function(){
 			mw.log("EmbedPlayer:: enablePlayControls" );
 			if( this.useNativePlayerControls() ){
@@ -410,7 +409,7 @@
 			}
 			this._playContorls = true;
 			// re-enable hover:
-			this.$interface.find( '.play-btn' )
+			this.getInterface().find( '.play-btn' )
 				.buttonHover()
 				.css('cursor', 'pointer' );
 	
@@ -422,13 +421,17 @@
 			 */
 			$( this ).trigger( 'onEnableInterfaceComponents');
 		},
+		
+		/**
+		 * Disables play controls, for example when an ad is playing back
+		 */
 		disablePlayControls: function(){
 			if( this.useNativePlayerControls() ){
 				return ;
 			}
 			this._playContorls = false;
 			// turn off hover:
-			this.$interface.find( '.play-btn' )
+			this.getInterface().find( '.play-btn' )
 				.unbind('mouseenter mouseleave')
 				.css('cursor', 'default' );
 	
@@ -454,8 +457,8 @@
 		applyIntrinsicAspect: function(){
 			var $this = $( this );
 			// Check if a image thumbnail is present:
-			if(  this.$interface && this.$interface.find('.playerPoster').length ){
-				var img = this.$interface.find('.playerPoster')[0];
+			if(  this.getInterface().find('.playerPoster').length ){
+				var img = this.getInterface().find('.playerPoster')[0];
 				var pHeight = $this.height();
 				// Check for intrinsic width and maintain aspect ratio
 				if( img.naturalWidth && img.naturalHeight ){
@@ -690,7 +693,7 @@
 				// Trigger layout ready event
 				$( this ).trigger( 'layoutReady' );
 				// Show the interface: 
-				this.$interface.find( '.control-bar').show();
+				this.getInterface().find( '.control-bar').show();
 				this.addLargePlayBtn();
 			}
 			// We still do the playerReady sequence on errors to provide an api 
@@ -784,11 +787,11 @@
 				this.selectedPlayer = player;
 				this.updatePlaybackInterface( function(){
 					// Hide / remove track container
-					_this.$interface.find( '.track' ).remove();
+					_this.getInterface().find( '.track' ).remove();
 					// We have to re-bind hoverIntent ( has to happen in this scope )
 					if( !_this.useNativePlayerControls() && _this.controls && _this.controlBuilder.isOverlayControls() ){
 						_this.controlBuilder.showControlBar();
-						_this.$interface.hoverIntent({
+						_this.getInterface().hoverIntent({
 							'sensitivity': 4,
 							'timeout' : 2000,
 							'over' : function(){
@@ -838,19 +841,14 @@
 		 * Get the player height
 		 */
 		getHeight: function() {
-			var el = ( this.$interface ) ? this.$interface : this;
-			return $( el ).height();
+			return this.getInterface().height();
 		},
 	
 		/**
 		 * Get the player width
 		 */
 		getWidth: function(){
-			var el = ( this.$interface ) ? this.$interface : this;
-	        if ( $.browser.mozilla && parseFloat( $.browser.version ) < 2 ) {
-	            return ( $( this ).parent().parent().width() );
-	        }
-			return $( el ).width();
+			return this.getInterface().width();
 		},
 	
 		/**
@@ -1057,9 +1055,6 @@
 			var _this = this;
 			// Remove the player loader spinner if it exists
 			this.hideSpinnerAndPlayBtn();
-			// Build interface and control bar
-			this.buildLayout();
-	
 			// If a isPersistentNativePlayer ( overlay the controls )
 			if( !this.useNativePlayerControls() && this.isPersistentNativePlayer() ){
 				$( this ).show();
@@ -1084,13 +1079,13 @@
 			// Do we need to show the player?
 			if( this.displayPlayer === false ) {
 				_this.getVideoHolder().hide();
-				_this.$interface.height( _this.getComponentsHeight() );
+				_this.getInterface().height( _this.getComponentsHeight() );
 				_this.triggerHelper('updateLayout');
 			}
 	
 			// Update layout
 			this.updateLayout();
-			
+
 			// Make sure we have a play btn:
 			this.addLargePlayBtn();		
 			
@@ -1123,22 +1118,28 @@
 			var height = 0;
 	
 			// Go over all playerContainer direct children with .block class
-			$('#playerContainer > .block').each(function() {
+			this.getInterface().find('.block').each(function() {
 				height += $( this ).outerHeight( true );
 			});
 	
-			// If we're in vertical playlist mode, and not in fullscreen add playlist height
+			// FIXME embedPlayer should know nothing about playlist layout 
+			/* If we're in vertical playlist mode, and not in fullscreen add playlist height
 			if( $('#container').hasClass('vertical') && ! this.controlBuilder.isInFullScreen() && this.displayPlayer ) {
 				height += $('#playlistContainer').outerHeight( true );
 			}
+			*/
 			
+			// 
 			var offset = (mw.isIOS()) ? 5 : 0;
 			
 			return height + offset;
 		},
-	
 		updateLayout: function() {
-			// Set window height
+			if( !mw.getConfig('EmbedPlayer.IsIframeServer' ) ){
+				// Use intrensic container size
+				return ;
+			}
+			// Set window height if in iframe:
 			var windowHeight;
 			if( mw.isIOS() && ! this.controlBuilder.isInFullScreen() ) {
 				windowHeight = $( window.parent.document.getElementById( this.id ) ).height();
@@ -1154,17 +1155,37 @@
 				this.getVideoHolder().height( newHeight );
 			}
 		},
-								
-		getPlayerInterface: function(){
+		/**
+		 * Gets a refrence to the main player interface, builds if not avaliable 
+		 */
+		getInterface: function(){
 			if( !this.$interface ){
-				this.$interface = $( '#playerContainer' ).addClass('mv-player');
-				// if using "native" interface don't do any pointer events:
+				// init the control builder
+				this.controlBuilder = new mw.PlayerControlBuilder( this );
+				
+				// build the interface wrapper
+				this.$interface = $( this ).wrap(
+					$('<div />')
+					.addClass( 'mwPlayerContainer ' + this.controlBuilder.playerClass )
+					.append( 
+						$('<div />').addClass( 'videoHolder' )
+					)
+					
+				).parent().parent();
+				
+				// pass along any inhereted style:
+				if( this.style.cssText ){
+					this.$interface[0].style.cssText = this.style.cssText;
+				}
+				
+				// if not displayiung a play button, ( pass through to native player ) 
 				if( ! this.useLargePlayBtn() ){
 					this.$interface.css('pointer-events', 'none');
 				}
 			}
 			return this.$interface;
 		},
+		
 		/**
 		 * Media fragments handler based on:
 		 * http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#fragment-dimensions
@@ -1223,6 +1244,7 @@
 			}
 			return null;
 		},
+		
 		/**
 		 * Show an error message on the player
 		 *
@@ -1234,26 +1256,26 @@
 			this.hideSpinnerAndPlayBtn();
 			if( this.controlBuilder ) {
 				if( mw.getConfig("EmbedPlayer.ShowPlayerAlerts") ) {
-					var alertObj = $.extend( errorObj, {'isModal': true, 'keepOverlay': true, 'noButtons': true, 'isError': true} );
+					var alertObj = $.extend( errorObj, {
+						'isModal': true, 
+						'keepOverlay': true, 
+						'noButtons': true, 
+						'isError': true
+					} );
 	 				this.controlBuilder.displayAlert( alertObj );
 				}
 			}
 			return ;
 		},
+		
 		/**
 		 * Blocks the player display by invoking an empty error msg
 		 */
 		blockPlayerDisplay: function(){
 			this.showErrorMsg();
-			this.$interface.find( '.error' ).hide();
+			this.getInterface().find( '.error' ).hide();
 		},
 		
-		buildLayout: function() {
-			// Control builder ( for play button )
-			this.controlBuilder = new mw.PlayerControlBuilder( this );
-			// Make sure interface is available
-			this.getPlayerInterface();		
-		},
 		/**
 		 * Get missing plugin html (check for user included code)
 		 *
@@ -1266,9 +1288,6 @@
 			mw.log("EmbedPlayer::showPlayerError");
 			// Hide loader
 			this.hideSpinnerAndPlayBtn();
-	
-			// build interface and control bar
-			this.buildLayout();
 	
 			// Error in loading media ( trigger the mediaLoadError )
 			$this.trigger( 'mediaLoadError' );
@@ -1326,7 +1345,7 @@
 				}
 			});
 			// Set the play button to the first available source:
-			var $pBtn = this.$interface.find('.play-btn-large')
+			var $pBtn = this.getInterface().find('.play-btn-large')
 			.attr( 'title', gM('mwe-embedplayer-play_clip') )
 			.show()
 			.unbind( 'click' )
@@ -1493,12 +1512,12 @@
 			$this.attr( 'data-blockPlayerDisplay', '');
 	
 			// Clear out the player error div:
-			this.$interface.find('.error').remove();
+			this.getInterface().find('.error').remove();
 			this.controlBuilder.closeAlert();
 			this.controlBuilder.closeMenuOverlay();
 	
 			// Restore the control bar:
-			this.$interface.find('.control-bar').show();
+			this.getInterface().find('.control-bar').show();
 			// Hide the play btn
 			this.hideLargePlayBtn();
 			
@@ -1737,8 +1756,8 @@
 		 * TODO move to player controls
 		 */
 		hideLargePlayBtn: function(){
-			if( this.$interface ){
-				this.$interface.find( '.play-btn-large' ).hide();
+			if( this.getInterface() ){
+				this.getInterface().find( '.play-btn-large' ).hide();
 			}
 		},
 		/**
@@ -1753,15 +1772,15 @@
 			// if using native controls make sure we can click the big play button by restoring
 			// interface click events:
 			if( this.useNativePlayerControls() ){
-				this.$interface.css('pointer-events', 'auto');
+				this.getInterface().css('pointer-events', 'auto');
 			}
 	
 			// iPhone in WebKitPlaysInline mode does not support clickable overlays as of iOS 5.0
 			if( mw.getConfig( 'EmbedPlayer.WebKitPlaysInline') && mw.isIphone() ) {
 				return ;
 			}
-			if( this.$interface.find( '.play-btn-large' ).length ){
-				this.$interface.find( '.play-btn-large' ).show();
+			if( this.getInterface().find( '.play-btn-large' ).length ){
+				this.getInterface().find( '.play-btn-large' ).show();
 			} else {
 				this.getVideoHolder().append(
 					this.controlBuilder.getComponent( 'playButtonLarge' )
@@ -1770,7 +1789,7 @@
 		},
 	
 		getVideoHolder: function() {
-			return this.$interface.find('#videoHolder');
+			return this.getInterface().find('.videoHolder');
 		},
 		
 		/**
@@ -1951,7 +1970,9 @@
 		play: function() {
 			var _this = this;
 			var $this = $( this );
-			mw.log( "EmbedPlayer:: play: " + this._propagateEvents + ' poster: ' +  this.stopped );		// Store the absolute play time ( to track native events that should not invoke interface updates )
+			// Store the absolute play time ( to track native events that should not invoke interface updates )
+			mw.log( "EmbedPlayer:: play: " + this._propagateEvents + ' poster: ' +  this.stopped );		
+
 			this.absoluteStartPlayTime =  new Date().getTime();
 	
 			// Check if thumbnail is being displayed and embed html
@@ -2046,18 +2067,16 @@
 				this.controlBuilder.closeMenuOverlay();
 			}
 			// Hide any buttons or errors  if present:
-			if( this.$interface ){
-				this.$interface.find( '.error' ).remove();
-				this.hideLargePlayBtn();
-			}
+			this.getInterface().find( '.error' ).remove();
+			this.hideLargePlayBtn();
 	
-			this.$interface.find('.play-btn span')
+			this.getInterface().find('.play-btn span')
 			.removeClass( 'ui-icon-play' )
 			.addClass( 'ui-icon-pause' );
 	
 			this.hideSpinnerOncePlaying();
 	
-			this.$interface.find( '.play-btn' )
+			this.getInterface().find( '.play-btn' )
 			.unbind('click')
 			.click( function( ) {
 				if( _this._playContorls ){
@@ -2136,20 +2155,18 @@
 			var _this =this;
 			mw.log("EmbedPlayer::pauseInterfaceUpdate");
 			// Update the ctrl "paused state"
-			if( this.$interface ){
-				this.$interface.find('.play-btn span' )
-				.removeClass( 'ui-icon-pause' )
-				.addClass( 'ui-icon-play' );
-	
-				this.$interface.find( '.play-btn' )
-				.unbind('click')
-				.click( function() {
-					if( _this._playContorls ){
-						_this.play();
-					}
-				} )
-				.attr( 'title', gM( 'mwe-embedplayer-play_clip' ) );
-			}
+			this.getInterface().find('.play-btn span' )
+			.removeClass( 'ui-icon-pause' )
+			.addClass( 'ui-icon-play' );
+
+			this.getInterface().find( '.play-btn' )
+			.unbind('click')
+			.click( function() {
+				if( _this._playContorls ){
+					_this.play();
+				}
+			} )
+			.attr( 'title', gM( 'mwe-embedplayer-play_clip' ) );
 		},
 		/**
 		 * Maps the html5 load request. There is no general way to "load" clips so
@@ -2279,9 +2296,9 @@
 		 */
 		setInterfaceVolume: function( percent ) {
 			if( this.supports[ 'volumeControl' ] &&
-				this.$interface.find( '.volume-slider' ).length
+				this.getInterface().find( '.volume-slider' ).length
 			) {
-				this.$interface.find( '.volume-slider' ).slider( 'value', percent * 100 );
+				this.getInterface().find( '.volume-slider' ).slider( 'value', percent * 100 );
 			}
 		},
 	
@@ -2563,7 +2580,7 @@
 		 */
 		updateBufferStatus: function() {
 			// Get the buffer target based for playlist vs clip
-			var $buffer = this.$interface.find( '.mw_buffer' );
+			var $buffer = this.getInterface().find( '.mw_buffer' );
 	
 			// mw.log(' set bufferd %:' + this.bufferedPercent );
 			// Update the buffer progress bar (if available )
@@ -2603,8 +2620,8 @@
 		 */
 		updatePlayHead: function( perc ) {
 			//mw.log( 'EmbedPlayer: updatePlayHead: '+ perc);
-			if( this.$interface ){
-				var $playHead = this.$interface.find( '.play_head' );
+			if( this.getInterface() ){
+				var $playHead = this.getInterface().find( '.play_head' );
 				if ( !this.useNativePlayerControls() && $playHead.length != 0 ) {
 					var val = parseInt( perc * 1000 );
 					$playHead.slider( 'value', val );
