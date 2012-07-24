@@ -256,7 +256,7 @@ mw.processEmbedPlayers = function( playerSelect, callback ) {
 			.addClass( 'nativeEmbedPlayerPid' )
 			.show()
 			.after(
-				$( swapPlayerElement ).css( 'display', 'none' )
+				$( swapPlayerElement )
 			);
 
 		} else {

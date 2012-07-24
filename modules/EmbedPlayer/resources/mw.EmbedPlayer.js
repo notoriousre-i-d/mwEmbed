@@ -575,7 +575,7 @@
 	        if ( $.browser.mozilla && parseFloat( $.browser.version ) < 2 ) {
 	            return ( $( this ).parent().parent().width() );
 	        }
-			return $( this ).width();
+			return this.getVideoHolder().width();
 		},
 	
 		/**
@@ -584,7 +584,7 @@
 		 * @return {Number} pixel height of the video
 		 */
 		getPlayerHeight: function() {
-			return $( this ).height();
+			return this.getVideoHolder().height();
 		},
 	
 		/**

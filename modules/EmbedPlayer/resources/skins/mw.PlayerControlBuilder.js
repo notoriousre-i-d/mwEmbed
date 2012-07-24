@@ -162,7 +162,7 @@ mw.PlayerControlBuilder.prototype = {
 
 		//Set up local var to control container:
 		var $controlBar = embedPlayer.getInterface().find( '.control-bar' );
-
+debugger;
 		this.availableWidth = embedPlayer.getPlayerWidth();
 
 		mw.log( 'PlayerControlsBuilder:: addControlComponents into:' + this.availableWidth );
