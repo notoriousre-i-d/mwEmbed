@@ -1164,14 +1164,7 @@
 				this.controlBuilder = new mw.PlayerControlBuilder( this );
 				
 				// build the interface wrapper
-				this.$interface = $( this ).wrap(
-					$('<div />')
-					.addClass( 'mwPlayerContainer ' + this.controlBuilder.playerClass )
-					.append( 
-						$('<div />').addClass( 'videoHolder' )
-					)
-					
-				).parent().parent();
+				this.$interface = this.getContainer().find( '.mwPlayerContainer' ).addClass( this.controlBuilder.playerClass );
 				
 				// pass along any inhereted style:
 				if( this.style.cssText ){
@@ -1186,6 +1179,9 @@
 			return this.$interface;
 		},
 		
+		getContainer: function() {
+			return $('#container_' + this.id );
+		},
 		/**
 		 * Media fragments handler based on:
 		 * http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#fragment-dimensions

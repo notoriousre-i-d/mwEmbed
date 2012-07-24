@@ -121,7 +121,7 @@ class kalturaIframe {
 		$o.= "\n" . "</video>\n";
 		
 		// Wrap in a videoContainer
-		return  '<div id="videoHolder"> ' . $o . '</div>';
+		return  '<div class="videoHolder"> ' . $o . '</div>';
 	}
 	/**
 	 * Get Flash embed code with default flashvars:
@@ -564,8 +564,8 @@ class kalturaIframe {
 		<?php echo $this->outputIframeHeadCss(); ?>
 	</head>
 	<body>
-		<div id="container">
-			<div id="playerContainer">
+		<div id="container_<?php echo $this->getIframeId(); ?>" class="container">
+			<div class="mwPlayerContainer">
 			<?php echo $this->getVideoHTML(); ?>
 			</div>
 		</div>
