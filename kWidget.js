@@ -144,7 +144,7 @@ var kWidget = {
 	 */
 	jsCallbackReady: function( widgetId ){
 		if( this.destroyedWidgets[ widgetId ] ){		
-			// don't issue ready callbacks on destoryed widgets: 
+			// Don't issue ready callbacks on destroyed widgets: 
 			return ;
 		}
 		// Check for proxied jsReadyCallback: 
@@ -209,6 +209,18 @@ var kWidget = {
 		if( elm.getAttribute('name') == 'kaltura_player_iframe_no_rewrite' ){
 			return ;
 		}
+		// Check for size override in kWidget embed call
+		function checkSizeOveride( dim ){
+			if( settings[ dim ] ){
+				// check for non px value: 
+				if( parseInt(  settings[ dim ] ) ==  settings[ dim ] ){
+					settings[ dim ] += 'px';
+				}
+				elm.style[ dim ] =  settings[ dim ];
+			}
+		}
+		checkSizeOveride( 'width' );
+		checkSizeOveride( 'height' );
 		
 		// Unset any destroyed widget with the same id: 
 		if( this.destroyedWidgets[ targetId ] ){
@@ -277,7 +289,7 @@ var kWidget = {
 	 */
 	destroy: function( target ){
 		if( typeof target == 'string' ){
-			target = document.getElmentById( target );
+			target = document.getElementById( target );
 		}
 		if( ! target ){
 			this.log( "Error destory called without valid target");
@@ -294,6 +306,7 @@ var kWidget = {
 		target.parentNode.removeChild( target );
 		target = null;
 	},
+
 	/**
 	 * Embeds the player from a set of on page objects with kEmbedSettings properties
 	 * @param {object} rewriteObjects set of in page object tags to be rewritten
@@ -373,16 +386,7 @@ var kWidget = {
 		elm.setAttribute( 'id', elm.id + '_container' );
 		
 		// Output a normal flash object tag:
-		var spanTarget = document.createElement("span");
-		
-		// Get height/width embedSettings, attribute, style ( percentage or px ), or default 400x300
-		var width = ( settings.width ) ? settings.width :
-						( elm.width ) ? elm.width :
-							( elm.style.width ) ? parseInt( elm.style.width ) : 400;
-
-		var height = ( settings.height ) ? settings.height :
-						( elm.height ) ? elm.height :
-							( elm.style.height ) ? parseInt( elm.style.height ) : 300;
+		var spanTarget = document.createElement( "span" );
 
 		// make sure flashvars are init: 
 		if( ! settings.flashvars ){
@@ -404,10 +408,8 @@ var kWidget = {
 			'allowScriptAccess': 'always',
 			'bgcolor': '#000000'
 		};
-
-		var output = '<object width="' + width +
-				'" height="' + height +
-				'" style="width:' + width + 'px;height:' + height + 'px;' +
+		
+		var output = '<object style="' + elm.style.cssText + '" ' + 
 				'" id="' + targetId +
 				'" name="' + targetId + '"';
 
@@ -474,6 +476,7 @@ var kWidget = {
 	 * @param {object} settings object used to build iframe settings
 	 */
 	outputHTML5Iframe: function( targetId, settings ) {
+		var _this = this;
 		var elm = document.getElementById( targetId );
 		// Check for html with api off:
 		if( !mw.getConfig( 'EmbedPlayer.EnableIframeApi') ){
@@ -482,33 +485,10 @@ var kWidget = {
 		}
 		// Output HTML5 IFrame with API
 		this.loadHTML5Lib( function(){
-			var width = ( settings.width ) ? settings.width :
-						jQuery( elm ).width() ? jQuery( elm ).width() : 400;
-
-			var height = ( settings.height ) ? settings.height :
-						jQuery( elm ).height() ? jQuery( elm ).height() : 300;
-					
-			if( typeof width == 'string' && width.indexOf('%') === -1 ) {
-				width = parseInt( width );
-			}
-			
-			if( typeof height == 'string' && height.indexOf('%') === -1 ) {
-				height = parseInt( height );
-			}
-
-			var targetCss = {
-				'width': width,
-				'height': height
-			};
-			
-			var additionalTargetCss = kWidget.getAdditionalTargetCss();
-			jQuery.extend( targetCss, additionalTargetCss );
-			jQuery('#' + targetId ).css( targetCss );
 			// Do kaltura iframe player
 			jQuery('#' + targetId ).kalturaIframePlayer( settings );
 		});
 	},
-	
 	/**
 	 * Output an iframe without api. ( should rarely be used, this dissabe on page javascript api, 
 	 * as well as native fullscreen on browsers that support it.  
@@ -552,95 +532,6 @@ var kWidget = {
 		iframe.style.overflow = 'hidden';
 
 		parentNode.replaceChild( iframe, targetNode );
-	},
-	
-	/**
-	 * Outputs a direct download link 
-	 * TODO replace with image link player for most limited device profiles
-	 * @param {string} replaceTargetId target container for direct download 
-	 * @param {object} settings object used to build download link
-	 */
-	outputDirectDownload: function( replaceTargetId, settings ) {
-
-		// Empty the replace target:
-		var targetNode = document.getElementById( replaceTargetId );
-		if( ! targetNode ){
-				kWidget.log( "Error could not find object target: " + replaceTargetId );
-		}
-		// remove all object children
-		// use try/catch to fix ie issue
-		try {
-			targetNode.innerHTML = '';
-		} catch (e) {
-			//alert(e);
-		}
-		//while ( targetNode.hasChildNodes() ) {
-		//   targetNode.removeChild( targetNode.lastChild );
-		//}
-		var options = {};
-		// look some other places for sizes:
-		if( settings.width )
-			options.width = settings.width;
-		if( settings.height )
-			options.height = settings.height;
-		if( !options.width && targetNode.style.width )
-			options.width = targetNode.style.width;
-		if( !options.height && targetNode.style.height )
-			options.height = targetNode.style.height;
-		if( !options.height )
-			options.height = 300;
-		if( !options.width )
-			options.width = 400;
-		
-		if( ! settings.wid && settings.partner_id ) {
-			settings.wid = '_' + settings.partner_id;
-		}
-		
-		if( ! settings.partner_id && settings.wid ) {
-			settings.partner_id = settings.wid.replace('_', '');
-		}
-
-		// TODO: Add playEventUrl for stats
-		var baseUrl = SCRIPT_LOADER_URL.replace( 'ResourceLoader.php', '' );
-		var downloadUrl = baseUrl + 'download.php/wid/' + settings.wid;
-
-		// Also add the uiconf id to the url:
-		if( settings.uiconf_id ){
-			downloadUrl += '/uiconf_id/' + settings.uiconf_id;
-		}
-
-		if( settings.entry_id ) {
-			downloadUrl += '/entry_id/'+ settings.entry_id;
-		}
-
-		var thumbSrc = this.getKalturaThumbUrl({
-			'entry_id' : settings.entry_id,
-			'partner_id' : settings.partner_id,
-			// By default set the thumbnail size to the full window size. 
-			'height' : ( document.body.clientHeight )? document.body.clientHeight : '300',
-			'width' : ( document.body.clientHeight )? document.body.clientHeight : '400'
-		});
-		var playButtonUrl = baseUrl + 'skins/common/images/player_big_play_button.png';
-		var playButtonCss = 'background: url(\'' + playButtonUrl + '\'); width: 70px; height: 53px; position: absolute; top:50%; left:50%; margin: -26px 0 0 -35px;';
-		var ddId = ( settings.id ) ? settings.id : 'dd_' + Math.round( Math.random() * 1000 );
-
-		var ddHTML = '<div id="' + ddId + '" style="width: ' + options.width + ';height:' + options.height + ';position:relative">' +
-				'<img style="width:100%;height:100%" src="' + thumbSrc + '" >' +
-				'<a id="directFileLinkButton" href="' + downloadUrl + '" target="_blank" style="' + playButtonCss + '"></a>' +
-				 '</div>';
-
-		var parentNode = targetNode.parentNode;
-		var div = document.createElement('div');
-		div.style.width = options.width + 'px';
-		div.style.height = options.height + 'px';
-
-		div.innerHTML = ddHTML;
-		parentNode.replaceChild( div, targetNode );
-
-		// if failed, try appending after the node:
-		if( ! document.getElementById( ddId ) ){
-			parentNode.insertBefore( div, targetNode );
-		}
 	},
 	
 	/**
@@ -997,6 +888,10 @@ var kWidget = {
 	 	if( !flashvars ){
 	 		flashvars= {};
 	 	}
+		
+		if( ! swfUrl ) {
+			return {};
+		}
 
 	 	var trim = function ( str ) {
 	 		return str.replace(/^\s+|\s+$/g,"");
@@ -1529,18 +1424,21 @@ var kWidget = {
 				// TODO test with kWidget.embed replacement.
 				_this.domReady(function(){
 					var kEmbedSettings = kWidget.getEmbedSettings( attributes.src, flashvars);
-					kEmbedSettings.width = attributes.width;
-					kEmbedSettings.height = attributes.height;
 					
 					if( kEmbedSettings.uiconf_id && ( kWidget.isHTML5FallForward() || ! kWidget.supportsFlash() ) ){
-						document.getElementById( targetId ).innerHTML = '<div id="' + attributes.id + '"></div>';
+						document.getElementById( targetId ).innerHTML = '<div style="width:100%;height:100%" id="' + attributes.id + '"></div>';
 						doEmbedSettingsWrite( kEmbedSettings, attributes.id, attributes.width, attributes.height);
 					} else {
 						// Use the original flash player embed:  
-						originalFlashembed( targetId, attributes, flashvars );
+						return originalFlashembed( targetId, attributes, flashvars );
 					}
 				});
 			};
+			// add static methods 
+			var flashembedStaticMethods = ['asString', 'getHTML', 'getVersion', 'isSupported'];
+			for(var i=0; i < flashembedStaticMethods.length; i++ ){
+				window['flashembed'][ flashembedStaticMethods[i] ] =originalFlashembed
+			} 
 		}
 	
 		// SWFObject v 1.5 

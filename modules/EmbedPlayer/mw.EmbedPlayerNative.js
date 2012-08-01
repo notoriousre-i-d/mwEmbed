@@ -123,7 +123,7 @@ mw.EmbedPlayerNative = {
 		
 		// Check if the poster is already present:
 		if( $( this ).find( '.playerPoster' ).length ){
-			$( this ).find( '.playerPoster' ).css('background-image', 'url(\'' + posterSrc + '\')' );
+			$( this ).find( '.playerPoster' ).attr('src', posterSrc );
 		} else {
 			$( this ).append(
 				$('<img />').css({
@@ -149,7 +149,7 @@ mw.EmbedPlayerNative = {
 		if( this.useLargePlayBtn() ){
 			this.addLargePlayBtn();
 		}
-		
+
 		if( vid && $( vid ).attr('src') == this.getSrc( this.currentTime ) ){
 			_this.postEmbedActions();
 			return ;
@@ -493,7 +493,6 @@ mw.EmbedPlayerNative = {
 	setCurrentTime: function( seekTime , callback, callbackCount ) {
 		var _this = this;
 		if( !callbackCount ){
-			mw.log(  "EmbedPlayerNative:: setCurrentTime called without callbackCount, set to zero" );
 			callbackCount = 0;
 		}
 		mw.log( "EmbedPlayerNative:: setCurrentTime seekTime:" + seekTime + ' count:' + callbackCount );
@@ -683,6 +682,8 @@ mw.EmbedPlayerNative = {
 
 		// only display switch msg if actually switching: 
 		mw.log( 'EmbedPlayerNative:: playerSwitchSource: ' + src + ' native time: ' + vid.currentTime );
+		// set the first embed play flag to true, avoid duplicate onPlay event: 
+		this.isFirstEmbedPlay = true;
 		
 		// Update some parent embedPlayer vars: 
 		this.currentTime = 0;
@@ -714,7 +715,11 @@ mw.EmbedPlayerNative = {
 				_this.hidePlayerOffScreen();
 				// restore position once we have metadata
 				$( vid ).bind( 'loadedmetadata' + switchBindPostfix, function(){
-					mw.log("EmbedPlayerNative:: playerSwitchSource> loadedmetadata callback for:" + src + ' switchCallback: ' + switchCallback );
+					$( vid ).unbind( 'loadedmetadata' + switchBindPostfix);
+					mw.log("EmbedPlayerNative:: playerSwitchSource> loadedmetadata callback for:" + src );
+					// Update the duration 
+					_this.duration = vid.duration;
+					
 					// keep going towards playback! if  switchCallback has not been called yet 
 					// we need the "playing" event to trigger the switch callback
 					if ( $.isFunction( switchCallback ) ){

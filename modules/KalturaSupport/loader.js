@@ -107,7 +107,8 @@
         "downloadPlugin"    :   "uiConfComponents/downloadPlugin.js",
         "captureThumbnailPlugin"    :   "uiConfComponents/captureThumbnailPlugin.js",
         "jCarousel"     :   "uiConfComponents/jcarousellite_1.0.1.js",
-        "carouselPlugin"    :   "uiConfComponents/carouselPlugin.js"
+        "carouselPlugin"    :   "uiConfComponents/carouselPlugin.js",
+		"likePlugin"	:	"uiConfComponents/likePlugin.js"
 	} );
 	
 	// Set a local variable with the request set so we can append it to embedPlayer
@@ -142,7 +143,8 @@
 		'bumperPlugin',
 		'playlistPlugin',
 		'jCarousel',
-		'carouselPlugin'
+		'carouselPlugin',
+		'likePlugin'
 	];
 	
 	mw.newEmbedPlayerCheckUiConf = function( callback ){
@@ -165,7 +167,7 @@
 		// selecting a download / playback flavor based on user agent. 
 		embedPlayer.bindHelper( 'directDownloadLink', function() {
 			var baseUrl = SCRIPT_LOADER_URL.replace( 'ResourceLoader.php', '' );
-			var downloadUrl = baseUrl + 'download.php/wid/' + this.kwidgetid;
+			var downloadUrl = baseUrl + 'modules/KalturaSupport/download.php/wid/' + this.kwidgetid;
 
 			// Also add the uiconf id to the url:
 			if( this.kuiconfid ){
@@ -174,8 +176,15 @@
 
 			if( this.kentryid ) {
 				downloadUrl += '/entry_id/'+ this.kentryid;
-			}			
-			$( embedPlayer ).data( 'directDownloadUrl', downloadUrl );
+			}
+			
+			// Append ks & referrer for access control
+			var referrer = base64_encode( kWidgetSupport.getHostPageUrl() );
+			var client = mw.kApiGetPartnerClient( this.kwidgetid );
+			client.getKS(function( ks ){
+				downloadUrl += '/?ks=' + ks + '&referrer=' + referrer;
+				$( embedPlayer ).data( 'directDownloadUrl', downloadUrl );
+			});
 		});
 	});
 	
@@ -295,25 +304,6 @@
 						
 						if( kEmbedSettings.entry_id || kEmbedSettings.p ){
 							videoEmbedAttributes.kentryid = kEmbedSettings.entry_id;
-							// If we have flashvar  we need to pass the ks to thumbnail url
-							var ks = ( flashvars && flashvars.loadThumbnailWithKs ) ? flashvars.ks : false;
-							var thumb_url =  kWidget.getKalturaThumbUrl({
-								'partner_id': kEmbedSettings.p,
-								'entry_id' :  kEmbedSettings.entry_id,
-								'ks' : ks,
-								'width' : parseInt( width ),
-								'height' : parseInt( height )
-							});
-							$imgThumb = $('<img />').attr({
-								'src' : thumb_url
-							})
-							.css({
-								'width' : width,
-								'height' : height,
-								//'position' : 'absolute',
-								'top' : '0px',
-								'left' : '0px'
-							});
 						}
 					} else {
 						// Assume widget ( can be playlist or other widgets )
@@ -337,7 +327,6 @@
 						.data('cache_st', kEmbedSettings.cache_st)
 						.addClass( kalturaSwapObjectClass )
 						.append(
-							$imgThumb,
 							$('<div />')
 							.attr('id', 'loadingSpinner_' + videoId )
 							.css({
@@ -516,6 +505,15 @@
 		
 		// Local function to handle iframe rewrites: 
 		function doRewriteIframe (iframeParams,  playerTarget ){
+			
+			// Set width & height if passed
+			if( iframeParams.width ) {
+				$( playerTarget ).width( iframeParams.width );
+			}
+			if( iframeParams.height ) {
+				$( playerTarget ).height( iframeParams.height );
+			}
+			
 			// Build the iframe request from supplied iframeParams: 
 			var iframeRequest = '';
 			for( var key in iframeParams ){
@@ -558,6 +556,7 @@
 			if( iframeParams['flashvars'] ){
 				$.each( iframeParams['flashvars'], function( key, value){
 					if( key ) {
+						value = (typeof value == 'object') ? JSON.stringify( value ) : value; // stringify adds wrapping quotes to strings
 						iframeRequest += '&' + encodeURIComponent( 'flashvars[' + key + ']' ) +
 							'=' + encodeURIComponent( value );
 					}
@@ -577,14 +576,14 @@
 				.attr({
 					'id' : iframeId,
 					'name' : iframeId,
-					'class' : baseClass + 'mwEmbedKalturaIframe',					
+					'class' : baseClass + 'mwEmbedKalturaIframe',
 					'height' : $( playerTarget ).height(),
-					'width' : $( playerTarget ).width(),
+					'width' : $( playerTarget ).width(),					
 					'allowfullscreen' : true
 				})
 				.attr('style', iframeStyle)
 				.css(iframeCss);
-			
+
 			// Create the iframe proxy that wraps the actual $iframe
 			// and will be converted into an "iframe" player via jQuery.fn.iFramePlayer call
 			var $iframeProxy = $('<div />').attr({
@@ -611,9 +610,12 @@
 					newDoc.open();
 					newDoc.write( iframeData.content );
 					newDoc.close();
-					// Invoke the iframe player api system:
-					$iframeProxy.iFramePlayer( callback );
-					
+					if( mw.getConfig('EmbedPlayer.EnableIframeApi') ){
+						// Invoke the iframe player api system:
+						$iframeProxy.iFramePlayer( callback );
+					} else {
+						callback();
+					}
 					// Clear out this global function 
 					window[ cbName ] = null;
 				};
@@ -628,7 +630,7 @@
 				// Replace the player with the iframe: 
 				$( playerTarget ).replaceWith( $iframeProxy );
 			
-				if(  mw.getConfig('EmbedPlayer.EnableIframeApi') ){
+				if( mw.getConfig('EmbedPlayer.EnableIframeApi') ){
 					// Invoke the iframe player api system:
 					$iframeProxy.iFramePlayer( callback );
 				}

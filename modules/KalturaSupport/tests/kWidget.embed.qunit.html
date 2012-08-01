@@ -15,9 +15,21 @@ function jsKalturaPlayerTest( videoId ){
 	}
 	window['allreadyRan'] = true;
 	
+	
 	// Name this module 
 	module( "kWidget Player" );
-	asyncTest( "Inline readyCallback fired", 2, function(){
+
+	asyncTest("Inline readyCallback fired", function(){
+		
+		window['testAutoPlay'] = function(){
+			var kdp = $( '#myVideoTarget' ).get( 0 );
+			test("AutoPlay flashvar passing", function(){
+				ok( kdp.evaluate('{configProxy.flashvars.autoPlay}') , 'AutoPlay flashvar set');
+			});
+			test( "Aribrary flashvar string passing", function(){
+				equal( kdp.evaluate('{configProxy.flashvars.fooBar}'), 'cats', "Passed foobar property" );
+			})
+		}
 		kalturaQunitWaitForPlayer( function(){
 			window['testAutoPlay'] = function(){
 				var kdp = $( '#' + videoId )[ 0 ];
@@ -33,7 +45,7 @@ function jsKalturaPlayerTest( videoId ){
 	window['testKWidgetDestroy'] = function(){
 		asyncTest("Test kWidget.destroy", function(){
 			var kdp = $( '#' + videoId )[ 0 ];
-			kWidget.destroy( kdp );
+			kWidget.destroy( kdp.id );
 			equal( isInDOMTree( kdp ), false, "Removed KDP from Dom" );
 			
 			// re add a video target with the same name
@@ -57,8 +69,13 @@ function jsKalturaPlayerTest( videoId ){
 					if( callOnce ){
 						ok( false, "Error called ready callback twice")	;
 					}
-					equal( window.inlineReadyCallbackCalled, false, "No inline callback from first kWidget.embed" );
-					equal( playerId, 'myVideoTarget', "Ready callback for re-embed is valid" );
+					var kdp = $('#' + playerId )[0];
+					equal( window.inlineReadyCallbackCalled, false, 
+							"No inline callback from first kWidget.embed" );
+					equal( playerId, 'myVideoTarget', 
+							"Ready callback for re-embed is valid" );
+					equal( kdp.evaluate('{mediaProxy.entry.id}') , '0_uka1msg4', 
+							"KDP evaluate valid entry id" );
 					
 					callOnce = true;
 					start();
