@@ -1,0 +1,329 @@
+/* Kaltura Masthead */
+div.kaltura-logo,
+div.kaltura-top-menu {
+  padding-top:2em;
+  margin-bottom:1em;
+}
+div.kaltura-logo {
+  float: left;
+}
+div.kaltura-top-menu {
+  float: right;
+}
+.kaltura-top-menu > .breadcrumb {
+  font-weight: bold;
+  background-color: white;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+}
+ul.kaltura-menu a
+{
+  font-weight: bold;	
+  font-size: 1.17em;
+  color: #666560;
+}
+ul.content-menu,
+ul.kaltura-menu {
+  margin-bottom:0px;
+}
+ul.dropdown-menu {
+  padding: 0 0;
+  margin: 0px 0 0;
+}
+
+/* Application specific menu */
+
+#kaltura-content-menu-header
+{
+  padding-top: 1.1em;
+  padding-bottom: 1em; 
+  margin-bottom: 90px;
+  background-color: #ff8c38;
+  background: -moz-linear-gradient(30deg, rgb(164,69,26) 0%, #ff8c38 25%, #e36d29 40%, #ff8c38 80%);
+  background: -webkit-linear-gradient(30deg, rgb(164,69,26) 0%, #ff8c38 25%, #e36d29 40%, #ff8c38 80%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff8c38', endColorstr='#A4451A', gradientType='1');
+}
+.content-menu {
+  font-size: 1.1em;
+  text-shadow: rgba(0, 0, 0, .2) -1px -1px 1px;
+  font-weight: bold;
+  color: white;
+}
+.content-menu a
+{
+  color: white;
+}
+.content-menu .active a {
+  background-color:transparent !important;
+}
+.content-menu .active a,
+.content-menu .active a:active,
+.content-menu .active a:hover {
+  color: @grayDarker !important;
+}
+.content-menu li.active,
+.content-menu a:hover
+{
+  color: #DCDCDC;
+  text-decoration: none;
+  background-color:transparent !important;
+}
+.content-menu li.active
+{
+  color: #3b3b3b;
+  font-weight: bold;
+  text-shadow: none;
+  /* no background right now
+  background: url(kaltura-images/content-menu-hover.png);
+  background-repeat:no-repeat;
+  background-position:center bottom;
+  padding-bottom:20px;
+   */
+}
+.masthead-menu li.selected
+{
+  color: #E34C26;
+  font-weight: bold;
+  text-decoration: underline;
+}
+#kaltura-content-menu li
+{
+  position:relative;
+  top:16px;
+  margin-right: 1em;	
+}
+
+/* Hacks to make the content area look better */
+.kaltura-first-title {
+  display:block;
+  margin-top:0px;
+  min-height:50px;
+  line-height:1.1em;
+  margin-bottom:1em;
+  margin-left:75px;
+  font-size:35px;
+  text-align: justify;
+}
+/*
+.kaltura-first-title:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+*/
+/* Content Sidebar */
+
+#kaltura-sidebar {
+  display: block;
+  float: right;
+}
+ul.kaltura-sidebar-menu {
+  text-align:left;
+  list-style: none;
+}
+.kaltura-sidebar-menu li {
+  float: none;
+}
+
+
+/* Kaltura Footer */
+div.kaltura-footer-banner
+{
+  height:90px;
+  margin-top:120px;
+  margin-bottom:90px;
+  background-color: #21879d;
+}
+.kaltura-footer {
+  padding-top:3em;
+  font-size: .9em;
+  color: @white;
+}
+.kaltura-footer a:visited,
+.kaltura-footer a {
+  color: @grayLighter;
+  text-decoration: underline;
+}
+.kaltura-footer a:active,
+.kaltura-footer a:hover {
+  color: @white;
+  background-color:transparent !important;
+}
+.kaltura-footer .nav > li >  a{
+  text-decoration: none;
+}
+.kaltura-footer-background
+{
+  background-color: #71787a;
+  background-image: -webkit-gradient(
+  linear,
+  left top,
+  left bottom,
+  color-stop(0, #71787a),
+
+  color-stop(1, rgba(0,0,0,.25))
+  );
+  background-image: -moz-linear-gradient(
+  center top,
+  #71787a,
+  #71787a,
+  rgba(0,0,0,.25)
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#71787a', endColorstr='#222222', gradientType='0');
+}
+.kaltura-footer-rule { 
+  margin: 0 -24px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  border:0;
+  height: 1px;
+  background: rgb(113,120,122);
+  background: 
+  -webkit-gradient(
+  linear, 
+  0 0, 
+  100% 0, 
+  from( rgba(113,120,122, 0) ), 
+  to( rgba(113,120,122, 0) ), 
+  color-stop(10%,  rgba(113,120,122, .9) ), 
+  color-stop(90%,  rgba(113,120,122, .9) )
+  );
+  background: -moz-linear-gradient(left, 
+  rgba(113,120,122,.25), rgba(255,255,255,.25), rgba(255,255,255,.25), rgba(255,255,255,.25), rgba(113,120,122,.25));
+}
+.kaltura-partners {
+  color:white;
+  font-weight: bold;
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+.kaltura-partners ul {
+  list-style:none;
+}
+.kaltura-partners ul,
+.kaltura-partners li {
+  float:left;
+  display:inline;
+}
+.kaltura-partners a {
+  opacity: .8;
+}
+.kaltura-partners a:hover {
+  opacity: 1;
+}
+.kaltura-partners img {
+  margin:2em 2em;
+}
+.kaltura-partners img.footer-html5-logo {
+  position: relative;
+  top:9px;
+}
+.kaltura-partners img.footer-mozilla-logo {
+  position: relative;
+  top:15px;
+}
+.kaltura-vertical-rule {
+  display:inline-block;
+  float:left;
+  position:absolute;
+  height:100px;
+  margin: 0;
+  margin-left:-1px;
+  width: 1px;
+  background: rgb(113,120,122);
+  background: 
+  -webkit-gradient(
+  linear, 
+  0 0, 
+  0 100%, 
+  from( rgba(113,120,122, 0) ), 
+  to( rgba(113,120,122, 0) ), 
+  color-stop(10%,  rgba(113,120,122, .9) ), 
+  color-stop(90%,  rgba(113,120,122, .9) )
+  );
+  background: -moz-linear-gradient(bottom, 
+  rgba(113,120,122,.25), rgba(255,255,255,.25), rgba(255,255,255,.25), rgba(255,255,255,.25), rgba(113,120,122,.25));
+}
+div.kaltura-footer-list {
+  display:inline-block;
+  vertical-align: top;
+  float: left;
+  margin-left: 0px;
+  margin-right: 0px;
+  width:130px;
+}
+div.kaltura-footer-list span {
+  font-weight:bold;
+}
+div.kaltura-footer-list-container {
+  overflow:hidden;
+}
+.kaltura-footer-social p {
+  font-weight: bold;
+}
+div.kaltura-footer-social > div {
+  display:block;
+  clear:both;
+  float:right;
+}
+div.kaltura-share {
+  float:right;
+  display:inline;
+  margin-right: 64px;
+}
+.sharrre .box{
+  float:left;
+  margin-right: 1em;
+}
+.sharrre .count {
+  color:#444444;
+  display:block;
+  font-size:17px;
+  line-height:34px;
+  height:34px;
+  padding:4px 0;
+  position:relative;
+  text-align:center;
+  text-decoration:none;
+  width:50px;
+  background-color:#eee;
+  -webkit-border-radius:4px;
+  -moz-border-radius:4px;
+  border-radius:4px; 
+}
+.sharrre .share {
+  color:#FFFFFF;
+  display:block;
+  font-size:11px;
+  height:16px;
+  line-height:16px;
+  margin-top:3px;
+  padding:0;
+  text-align:center;
+  text-decoration:none;
+  width:50px;
+  background-color:#9CCE39;
+  -webkit-border-radius:4px;
+  -moz-border-radius:4px;
+  border-radius:4px; 
+}
+.sharrre .buttons {
+  display:none;
+  position:absolute;
+  margin-left:50px;
+  z-index:10;
+  background-color:#fff;
+}
+.sharrre .button {
+  float:left;
+  max-width:50px;
+  margin-left:10px;
+}
+@media (max-width: 480px) {
+	.kaltura-first-title {
+		font-size:20px;
+	}
+}
