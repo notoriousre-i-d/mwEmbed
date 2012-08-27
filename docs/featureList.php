@@ -36,6 +36,17 @@
 					)
 	 			)
 			),
+			'Stand_Alone_Tools' => array(
+				'title' => 'Stand alone tools',
+				'desc' => 'Stand alone tools',
+				'testfiles' => array(
+					array(
+						'title' => 'Get Sources ( raw video tag )',
+						'hash' => 'getSources',
+						'path' => 'KalturaSupport/standAloneTests/kWidget.getSources.html'
+					)
+				)
+			),
 			'Player_API' => array(
 				'title' => "Ad providers",
 				'desc' => 'The Kaltura player supports several systems for video monitization.',
@@ -117,6 +128,11 @@
 						'hash' => 'ShareSnippet',
 						'path' => 'KalturaSupport/tests/ShareSnippet.html'
 					),
+					array(
+						'title' => 'Flavor Selection',
+						'hash' => 'FlavorSelector',
+						'path' => 'KalturaSupport/tests/FlavorSelector.preferedFlavorBR.qunit.html'
+					),
 				)
 			),
 			'Access_Control'=> array(
@@ -151,7 +167,7 @@
 					),
 					array(
 						'title' => 'Bumper video',
-						'hash' => 'kvast',
+						'hash' => 'kbumper',
 						'path' => 'KalturaSupport/tests/BumperVideoNoAdd.qunit.html'
 					),
 					array(
@@ -218,7 +234,7 @@
 					),
 					array(
 						'title' => 'Captions Custom Vars TTML',
-						'hash' => 'CaptionsUnderPlayer',
+						'hash' => 'CaptionsCustomVarsTTML',
 						'path' => 'KalturaSupport/tests/CaptionsCustomVarsTTML.qunit.html',
 					),
 					array(
@@ -228,7 +244,7 @@
 					)
 				)
 			),
-			'Base_Analyticss' => array(
+			'Analyticss' => array(
 				'title' => 'Base Analytics providers',
 				'desc' => 'The Kaltura player supports several systems for tracking video playback',
 				'testfiles' => array(

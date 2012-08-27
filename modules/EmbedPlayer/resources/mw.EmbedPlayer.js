@@ -290,6 +290,14 @@
 				if( this[ attr ] == "false" ) this[attr] = false;
 				if( this[ attr ] == "true" ) this[attr] = true;
 			}
+			if( ! this.width ){
+				this.width = $(element).width()
+				$(element).attr('width', this.width)
+			}
+			if( ! this.height ){
+				this.height = $(element).height()
+				$(element).attr('height', this.height)
+			}
 
 			// Hide "controls" if using native player controls:
 			if( this.useNativePlayerControls() ){
@@ -325,8 +333,8 @@
 			this.startOffset = parseFloat( this.startOffset );
 
 			// Set the source duration
-			if ( $( element ).attr( 'duration' ) ) {
-				_this.duration = $( element ).attr( 'duration' );
+			if ( element.duration ) {
+				_this.duration =  element.duration;
 			}
 			// Add durationHint property form data-durationhint:
 			if( _this['data-durationhint']){
@@ -487,6 +495,7 @@
 		 *      element Source element to grab size from
 		 */
 		loadPlayerSize: function( element ) {
+			debugger;
 			// check for direct element attribute:
 			this.height = element.height > 0 ? element.height + '' : $(element).css( 'height' );
 			this.width = element.width > 0 ? element.width + '' : $(element).css( 'width' );
