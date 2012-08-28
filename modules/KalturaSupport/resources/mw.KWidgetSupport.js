@@ -505,6 +505,11 @@ mw.KWidgetSupport.prototype = {
 			embedPlayer.pauseTime = parseFloat( mediaPlayTo );
 		}
 
+		// Should we show ads on replay?
+		if( getAttr( 'adsOnReplay' ) ) {
+			embedPlayer.adsOnReplay = true;
+		}
+
 		// Check for end screen play or "replay" button:
 		// TODO more complete endscreen support by doing basic layout of end screen!!!
 		if( embedPlayer.$uiConf.find( '#endScreen' ).find('button[command="play"],button[kclick="sendNotification(\'doPlay\')"]' ).length == 0 ){
@@ -542,9 +547,9 @@ mw.KWidgetSupport.prototype = {
 		var _this = this;
 		if( ! embedPlayer.playerConfig ){
 			// Some IE out of order issue? has us re-checking player config here
-			if( mw.getConfig( 'KalturaSupport.PlayerConfig' ) ){
-				embedPlayer.playerConfig =  mw.getConfig( 'KalturaSupport.PlayerConfig' );
-				mw.setConfig('KalturaSupport.PlayerConfig', null );
+			if( window.kalturaIframePackageData.playerConfig ){
+				embedPlayer.playerConfig =  window.kalturaIframePackageData.playerConfig;
+				delete( window.kalturaIframePackageData.playerConfig );
 			}
 
 			if( attr ){

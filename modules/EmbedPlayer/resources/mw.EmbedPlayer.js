@@ -131,7 +131,10 @@
 		"downloadLink" : true,
 
 		// Content type of the media
-		"type" : null
+		"type" : null,
+
+		// Should we show ads on replay?
+		"adsOnReplay": false
 
 	} );
 
@@ -495,7 +498,6 @@
 		 *      element Source element to grab size from
 		 */
 		loadPlayerSize: function( element ) {
-			debugger;
 			// check for direct element attribute:
 			this.height = element.height > 0 ? element.height + '' : $(element).css( 'height' );
 			this.width = element.width > 0 ? element.width + '' : $(element).css( 'width' );
@@ -1354,7 +1356,10 @@
 				||
 				!mw.getConfig('EmbedPlayer.NotPlayableDownloadLink') )
 			{
-				//this.showNoPlayableSources();
+				// Show missing sources error if we have entry id
+				if( this.kentryid ) {
+					this.showNoPlayableSources();
+				}
 				return ;
 			}
 			
@@ -1760,7 +1765,7 @@
 
 			// Do some device detection devices that don't support overlays
 			// and go into full screen once play is clicked:
-			if( mw.isAndroid2() || mw.isIpod()  || mw.isIphone() ){
+			if( mw.isAndroid2() || ( mw.isAndroid40() && !mw.isMobileChrome() ) || mw.isIpod()  || mw.isIphone() ){
 				return true;
 			}
 
@@ -2236,7 +2241,9 @@
 			this.stopped = true;
 
 			// Rest the prequecne flag:
-			this.preSequenceFlag = false;
+			if( this.adsOnReplay ) {
+				this.preSequenceFlag = false;
+			}
 
 			// Trigger the stop event:
 			$( this ).trigger( 'doStop' );
